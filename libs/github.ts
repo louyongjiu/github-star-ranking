@@ -1,4 +1,4 @@
-import { Octokit } from '@octokit/core';
+import { Octokit } from '@octokit/rest';
 import { QueryForStarredRepository, Repo, GithubRepositoryTopic, RepositoryTopic } from './types';
 import * as retry from 'retry';
 
