@@ -19,7 +19,7 @@ export class Github {
 
     async fullSync() {
         // @ts-ignore
-        const limit = +process.env.FULLSYNC_LIMIT || 2000;
+        const limit = +process.env.FULLSYNC_LIMIT || 200;
         console.log(`Github: Start to get all starred repos, limit is ${limit}`);
 
         let cursor = '';
