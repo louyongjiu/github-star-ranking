@@ -22,15 +22,15 @@ async function starRanking() {
   await github.fullSync();
 
   const topRepos = github.repoList.map((repo: Repo) => ({
-      Name: repo.nameWithOwner,
-      Link: repo.url,
-      Description:  repo.description && repo.description.length >= 2000
-                          ? repo.description.slice(0, 1997) + "..."
-                          : repo.description || "",
-      PrimaryLanguage: repo?.primaryLanguage?.name || '',
-      RepositoryTopics:  repo.repositoryTopics ? repo.repositoryTopics.map((topic) => topic.name).join(',') : '',
-      StarredAt:  repo.starredAt,
-      Stargazers:  repo.stargazerCount,
+    Name: repo.nameWithOwner,
+    Link: repo.url,
+    Description: repo.description && repo.description.length >= 2000
+      ? repo.description.slice(0, 1997) + "..."
+      : repo.description || "",
+    PrimaryLanguage: repo?.primaryLanguage?.name || '',
+    RepositoryTopics: repo.repositoryTopics ? repo.repositoryTopics.map((topic) => topic.name).join(',') : '',
+    StarredAt: repo.starredAt,
+    Stargazers: repo.stargazerCount,
   }));
 
   await writeDataToXlsxFile(topRepos);
@@ -38,13 +38,14 @@ async function starRanking() {
   // 将 xlsx 文件提交到仓库中
   const fileContent = fs.readFileSync(`./${filename}`);
   const base64Data = fileContent.toString('base64');
- 
-  const repository = process.env.REPOSITORY_OF_GITHUB;
-   // @ts-ignore
-  const { owner, repo } = repository.split('/');
-  const branch = process.env.BRANCH;
-  console.log(`repository: ${repository} , branch: ${branch}`);
-  
+
+
+  // const { owner, repo } = repository.split('/');
+  const owner = process.env.OWNER_OF_GITHUB ?? "";
+  const repo = process.env.REPOSITORY_OF_GITHUB ?? "";
+  const branch = process.env.BRANCH ?? "";
+  // console.log(`repository: ${repo} , branch: ${branch}`);
+
   const octokit = new Octokit({ auth: process.env.TOKEN_OF_GITHUB });
   await octokit.repos.createOrUpdateFileContents({
     owner,
