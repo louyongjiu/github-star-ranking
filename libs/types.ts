@@ -1,4 +1,3 @@
-import { PageObjectResponse, RichTextItemResponse, SelectPropertyItemObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 
 export interface RepositoryTopic {
     name: string;
@@ -45,20 +44,5 @@ export interface QueryForStarredRepository {
             starredAt: string;
             node: GithubStarRepoNode;
         }>;
-    };
-}
-
-export interface NotionPage extends PageObjectResponse {
-    properties: {
-        Name: {
-            type: "title";
-            title: Array<RichTextItemResponse>;
-            id: string;
-        };
-        Link: {
-            type: "url";
-            url: string | null;
-            id: string;
-        };
     };
 }
