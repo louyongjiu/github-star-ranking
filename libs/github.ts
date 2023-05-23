@@ -173,7 +173,7 @@ export class Github {
         const queryString=`stars:>=${stargazers_count} sort:stars-asc`
         const data = await this.client.graphql<{ viewer: QueryForStarredRepository }>(
             `
-            query GetTopRepositories($queryString: String!, $after: String) {
+            query GetTopRepositories($queryString: String!, $after: String, $topicFirst: Int) {
                 search(query: $queryString, type: REPOSITORY, first: 100, after: $after) {
                   repositoryCount
                   pageInfo {
