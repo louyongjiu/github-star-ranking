@@ -56,7 +56,7 @@ async function starRanking() {
   });
 }
 
-const ENVS = ['TOKEN_OF_GITHUB', 'REPOSITORY_OF_GITHUB', 'BRANCH'];
+const ENVS = ['TOKEN_OF_GITHUB'];
 
 ENVS.forEach((env) => {
   assert(process.env[env], `${env} must be added`);
