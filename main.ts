@@ -9,9 +9,8 @@ const filename = `star-ranking-${new Date().toISOString().slice(0, 10)}.xlsx`;
 
 // 将获取到的仓库数据写入 xlsx 文件
 async function writeDataToXlsxFile(data: any[]) {
-  const header = ['Name', 'Link', 'Description', 'stargazerCount'];
   const wb = xlsx.utils.book_new();
-  const ws = xlsx.utils.json_to_sheet(data, { header });
+  const ws = xlsx.utils.json_to_sheet(data);
 
   xlsx.utils.book_append_sheet(wb, ws, 'Top Repos');
 
