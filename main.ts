@@ -39,12 +39,12 @@ async function starRanking() {
   const fileContent = fs.readFileSync(`./${filename}`);
   const base64Data = fileContent.toString('base64');
 
-  console.log(`repository: ${process.env.GITHUB_REPOSITORY} , branch: ${process.env.GITHUB_REF}`);
+
   //@ts-ignore
   const { owner, repo } = process.env.GITHUB_REPOSITORY.split('/');
   //@ts-ignore
   const branch = process.env.GITHUB_REF.split('/').slice(-1)[0];
-
+  console.log(`owner: ${owner} , repo: ${repo} , branch: ${process.env.GITHUB_REF}`);
   const octokit = new Octokit({ auth: process.env.TOKEN_OF_GITHUB });
   await octokit.repos.createOrUpdateFileContents({
     owner: owner,
