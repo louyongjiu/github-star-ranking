@@ -171,7 +171,7 @@ export class Github {
     private async getTopRepoAfterCursor(cursor: string, topicFirst: number) {
         const stargazers_count=1000
         const queryString=`stars:>=${stargazers_count} sort:stars-asc`
-        const data = await this.client.graphql<{ viewer: QueryForStarredRepository }>(
+        const data = await this.client.graphql<{ search: QueryForStarredRepository }>(
             `
             query GetTopRepositories($queryString: String!, $after: String, $topicFirst: Int) {
                 search(query: $queryString, type: REPOSITORY, first: 100, after: $after) {
@@ -212,7 +212,7 @@ export class Github {
             },
         );
 
-        return data.viewer;
+        return data.search;
     }
 
 
