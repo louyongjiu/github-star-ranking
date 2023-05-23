@@ -41,6 +41,7 @@ async function starRanking() {
   // @ts-ignore
   const { owner, repo } = process.env.REPOSITORY_OF_GITHUB.split('/');
   const branch = process.env.BRANCH;
+  console.log(`REPOSITORY_OF_GITHUB: ${process.env.REPOSITORY_OF_GITHUB} , BRANCH: ${process.env.BRANCH}`);
   
   const octokit = new Octokit({ auth: process.env.TOKEN_OF_GITHUB });
   await octokit.repos.createOrUpdateFileContents({
