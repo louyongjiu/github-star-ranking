@@ -1,4 +1,5 @@
 import { github } from './libs/github';
+import { Repo } from './libs/types';
 import assert from 'assert';
 import * as fs from 'fs';
 import * as xlsx from 'xlsx';
@@ -8,7 +9,7 @@ const filename = `star-ranking-${new Date().toISOString().slice(0, 10)}.xlsx`;
 
 // 将获取到的仓库数据写入 xlsx 文件
 async function writeDataToXlsxFile(data: any[]) {
-  const header = ['nameWithOwner', 'url', 'description', 'stargazerCount'];
+  const header = ['Name', 'Link', 'Description', 'stargazerCount'];
   const wb = xlsx.utils.book_new();
   const ws = xlsx.utils.json_to_sheet(data, { header });
 
@@ -19,6 +20,19 @@ async function writeDataToXlsxFile(data: any[]) {
 
 async function starRanking() {
   await github.fullSync();
+
+  const topRepos = github.repoList.map((repo: Repo) => ({
+      Name: repo.nameWithOwner,
+      Link: repo.url,
+      Description:  repo.description && repo.description.length >= 2000
+                          ? repo.description.slice(0, 1997) + "..."
+                          : repo.description || "",
+      PrimaryLanguage: repo?.primaryLanguage?.name || '',
+      RepositoryTopics:  repo.repositoryTopics ? repo.repositoryTopics.map((topic) => topic.name).join(',') : '',
+      StarredAt:  repo.starredAt,
+      Stargazers:  repo.stargazerCount,
+  }));
+
   await writeDataToXlsxFile(github.repoList);
 
   // 将 xlsx 文件提交到仓库中
