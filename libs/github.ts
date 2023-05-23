@@ -56,7 +56,7 @@ export class Github {
         let round = 1;
 
         while (hasNextPage && repoList.length < limit) {
-            const data = await this.getTopRepoAfterCursorRetryable(cursor, githubTopicsFirst);
+            const data = await this.getTopRepoAfterCursor(cursor, githubTopicsFirst);
             repoList.push(
                 ...this.transformGithubStarResponse(data),
             );
@@ -207,7 +207,7 @@ export class Github {
             `,
             {
                 queryString:queryString,
-                after: cursor,
+                after: null,
                 topicFirst: topicFirst,
             },
         );
