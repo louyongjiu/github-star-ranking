@@ -47,9 +47,9 @@ async function starRanking() {
 
   const octokit = new Octokit({ auth: process.env.TOKEN_OF_GITHUB });
   await octokit.repos.createOrUpdateFileContents({
-    owner,
-    repo,
-    branch,
+    owner: owner,
+    repo: repo,
+    branch: branch,
     path: filename,
     content: base64Data,
     message: `Add ${filename}`
