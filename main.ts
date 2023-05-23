@@ -33,7 +33,7 @@ async function starRanking() {
       Stargazers:  repo.stargazerCount,
   }));
 
-  await writeDataToXlsxFile(github.repoList);
+  await writeDataToXlsxFile(topRepos);
 
   // 将 xlsx 文件提交到仓库中
   const fileContent = fs.readFileSync(`./${filename}`);
