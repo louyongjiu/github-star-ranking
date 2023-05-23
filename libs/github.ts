@@ -1,6 +1,8 @@
 import { Octokit } from '@octokit/rest';
+import { excel } from './excel';
 import { QueryForStarredRepository, Repo, GithubRepositoryTopic, RepositoryTopic } from './types';
 import * as retry from 'retry';
+import * as fs from 'fs';
 
 
 // @ts-ignore
@@ -116,6 +118,29 @@ export class Github {
         );
 
         return data.viewer;
+    }
+
+
+    async createOrUpdateFile() {
+        // 将 xlsx 文件提交到仓库中
+        const filename = excel.filename
+        const fileContent = fs.readFileSync(`./${filename}`);
+        const base64Data = fileContent.toString('base64');
+
+        //@ts-ignore
+        const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+        //@ts-ignore
+        const branch = process.env.GITHUB_REF.split('/').slice(-1)[0];
+        // console.log(`owner: ${owner} , repo: ${repo} , branch: ${branch}`);
+        const octokit = new Octokit({ auth: process.env.TOKEN_OF_GITHUB });
+        await octokit.repos.createOrUpdateFileContents({
+            owner: owner,
+            repo: repo,
+            branch: branch,
+            path: filename,
+            content: base64Data,
+            message: `Add ${filename}`
+        });
     }
 
 }
