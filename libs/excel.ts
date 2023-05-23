@@ -6,13 +6,14 @@ import { Repo } from './types';
 
 export class Excel {
     filename = `star-ranking-${new Date().toISOString().slice(0, 10)}.xlsx`;
-    
+
     async writeDataToXlsxFile() {
         const data = this.transformRepo()
         const wb = xlsx.utils.book_new();
         const ws = xlsx.utils.json_to_sheet(data);
         xlsx.utils.book_append_sheet(wb, ws, 'Top Repos');
         xlsx.writeFile(wb, this.filename);
+        console.log(`writeFile: success ${this.filename}`);
     }
 
     private transformRepo() {

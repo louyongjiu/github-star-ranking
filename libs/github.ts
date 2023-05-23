@@ -137,10 +137,11 @@ export class Github {
             owner: owner,
             repo: repo,
             branch: branch,
-            path: filename,
+            path: `daily-star-ranking/${filename}`,
             content: base64Data,
             message: `Add ${filename}`
         });
+        console.log(`uploadFile: success ${filename}`);
     }
 
 }
