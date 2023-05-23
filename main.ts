@@ -4,7 +4,7 @@ import assert from 'assert';
 
 
 async function starRanking() {
-  await github.fullSync();
+  await github.topSync();
   await excel.writeDataToXlsxFile();
   await github.createOrUpdateFile()
 }

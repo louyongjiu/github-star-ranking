@@ -45,6 +45,32 @@ export class Github {
         console.log(`Github: Get all starred repos success, count is ${this.repoList.length}`);
     }
 
+    async topSync() {
+        // @ts-ignore
+        const limit = +process.env.FULLSYNC_LIMIT || 200;
+        console.log(`Github: Start to get top repos, limit is ${limit}`);
+
+        let cursor = '';
+        let hasNextPage = true;
+        const repoList = [];
+        let round = 1;
+
+        while (hasNextPage && repoList.length < limit) {
+            const data = await this.getTopRepoAfterCursorRetryable(cursor, githubTopicsFirst);
+            repoList.push(
+                ...this.transformGithubStarResponse(data),
+            );
+            hasNextPage = data.starredRepositories.pageInfo.hasNextPage;
+            cursor = data.starredRepositories.pageInfo.endCursor;
+            console.log(`Github: Get top repos, round is ${round}, count is ${repoList.length}, cursor is ${cursor}, hasNextPage is ${hasNextPage}`);
+            round++;
+        }
+
+        this.repoList = repoList;
+
+        console.log(`Github: Get all top repos success, count is ${this.repoList.length}`);
+    }
+
     private transformGithubStarResponse(data: QueryForStarredRepository): Repo[] {
         return (data.starredRepositories.edges || []).map(({ node, starredAt }) => ({
             ...node,
@@ -112,6 +138,75 @@ export class Github {
                 }
             `,
             {
+                after: cursor,
+                topicFirst: topicFirst,
+            },
+        );
+
+        return data.viewer;
+    }
+
+    
+    private async getTopRepoAfterCursorRetryable(cursor: string, topicFirst: number) {
+        return new Promise<QueryForStarredRepository>((resolve, reject) => {
+            const operation: retry.RetryOperation = retry.operation({ retries: 5, factor: 2, minTimeout: 120000 });
+            operation.attempt(async (retryCount) => {
+                try {
+                    resolve(await this.getTopRepoAfterCursor(cursor, topicFirst))
+                } catch (err) {
+                    // @ts-ignore
+                    if (operation.retry(err)) {
+                        console.log(`Github: retryCount ${retryCount} , error ${JSON.stringify(err)}`);
+                        // console.log(`Rate limited, retrying in ${operation.timeouts()} ms`);
+                    } else {
+                        reject(err);
+                    }
+
+                }
+            });
+        });
+    }
+
+
+    private async getTopRepoAfterCursor(cursor: string, topicFirst: number) {
+        const stargazers_count=1000
+        const queryString=`stars:>=${stargazers_count} sort:stars-asc`
+        const data = await this.client.graphql<{ viewer: QueryForStarredRepository }>(
+            `
+            query GetTopRepositories($queryString: String!, $after: String) {
+                search(query: $queryString, type: REPOSITORY, first: 100, after: $after) {
+                  repositoryCount
+                  pageInfo {
+                    startCursor
+                    endCursor
+                    hasNextPage
+                  }
+                  edges {
+                    node {
+                      ... on Repository {
+                        nameWithOwner
+                        url
+                        description
+                        primaryLanguage {
+                            name
+                        }
+                        repositoryTopics(first: $topicFirst) {
+                            nodes {
+                                topic {
+                                    name
+                                }
+                            }
+                        }
+                        updatedAt
+                        stargazerCount
+                      }
+                    }
+                  }
+                }
+            }
+            `,
+            {
+                queryString:queryString,
                 after: cursor,
                 topicFirst: topicFirst,
             },
