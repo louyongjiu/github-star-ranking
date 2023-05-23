@@ -40,11 +40,10 @@ async function starRanking() {
   const base64Data = fileContent.toString('base64');
 
 
-  // const { owner, repo } = repository.split('/');
-  const owner = process.env.OWNER_OF_GITHUB ?? "";
-  const repo = process.env.REPOSITORY_OF_GITHUB ?? "";
-  const branch = process.env.BRANCH ?? "";
-  // console.log(`repository: ${repo} , branch: ${branch}`);
+  //@ts-ignore
+  const { owner, repo } = process.env.GITHUB_REPOSITORY.split('/');
+  //@ts-ignore
+  const branch = process.env.GITHUB_REF.split('/').slice(-1)[0];
 
   const octokit = new Octokit({ auth: process.env.TOKEN_OF_GITHUB });
   await octokit.repos.createOrUpdateFileContents({

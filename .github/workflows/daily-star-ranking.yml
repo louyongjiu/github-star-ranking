@@ -23,6 +23,4 @@ jobs:
       - name: Execute Script
         env:
           TOKEN_OF_GITHUB: ${{ secrets.TOKEN_OF_GITHUB }}
-          REPOSITORY_OF_GITHUB: ${{ secrets.REPOSITORY_OF_GITHUB }}
-          BRANCH: ${{ secrets.BRANCH }}
         run: npm start
