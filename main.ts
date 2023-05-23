@@ -25,10 +25,10 @@ async function starRanking() {
   const fileContent = fs.readFileSync(`./${filename}`);
   const base64Data = fileContent.toString('base64');
   // @ts-ignore
-  const { owner, repo } = process.env.GITHUB_REPOSITORY.split('/');
+  const { owner, repo } = process.env.REPOSITORY_OF_GITHUB.split('/');
   const branch = process.env.BRANCH;
   
-  const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+  const octokit = new Octokit({ auth: process.env.TOKEN_OF_GITHUB });
   await octokit.repos.createOrUpdateFileContents({
     owner,
     repo,
@@ -39,7 +39,7 @@ async function starRanking() {
   });
 }
 
-const ENVS = ['GITHUB_TOKEN', 'GITHUB_REF', 'GITHUB_REPOSITORY'];
+const ENVS = ['TOKEN_OF_GITHUB', 'REPOSITORY_OF_GITHUB', 'BRANCH'];
 
 ENVS.forEach((env) => {
   assert(process.env[env], `${env} must be added`);
