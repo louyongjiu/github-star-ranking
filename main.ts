@@ -38,10 +38,12 @@ async function starRanking() {
   // 将 xlsx 文件提交到仓库中
   const fileContent = fs.readFileSync(`./${filename}`);
   const base64Data = fileContent.toString('base64');
-  // @ts-ignore
-  const { owner, repo } = process.env.REPOSITORY_OF_GITHUB.split('/');
+ 
+  const repository = process.env.REPOSITORY_OF_GITHUB;
+   // @ts-ignore
+  const { owner, repo } = repository.split('/');
   const branch = process.env.BRANCH;
-  console.log(`REPOSITORY_OF_GITHUB: ${process.env.REPOSITORY_OF_GITHUB} , BRANCH: ${process.env.BRANCH}`);
+  console.log(`repository: ${repository} , branch: ${branch}`);
   
   const octokit = new Octokit({ auth: process.env.TOKEN_OF_GITHUB });
   await octokit.repos.createOrUpdateFileContents({
