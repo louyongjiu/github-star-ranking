@@ -46,3 +46,16 @@ export interface QueryForStarredRepository {
         }>;
     };
 }
+
+export interface QueryForTopRepository {
+        pageInfo: {
+            startCursor: string;
+            endCursor: string;
+            hasNextPage: boolean;
+        };
+        edges: Array<{
+            node: GithubStarRepoNode;
+        }>;
+
+}
+

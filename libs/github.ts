@@ -1,6 +1,6 @@
 import { Octokit } from '@octokit/rest';
 import { excel } from './excel';
-import { QueryForStarredRepository, Repo, GithubRepositoryTopic, RepositoryTopic } from './types';
+import { QueryForStarredRepository, Repo, GithubRepositoryTopic, RepositoryTopic, QueryForTopRepository } from './types';
 import * as retry from 'retry';
 import * as fs from 'fs';
 
@@ -58,10 +58,10 @@ export class Github {
         while (hasNextPage && repoList.length < limit) {
             const data = await this.getTopRepoAfterCursor(cursor, githubTopicsFirst);
             repoList.push(
-                ...this.transformGithubStarResponse(data),
+                ...this.transformGithubTopResponse(data),
             );
-            hasNextPage = data.starredRepositories.pageInfo.hasNextPage;
-            cursor = data.starredRepositories.pageInfo.endCursor;
+            hasNextPage = data.pageInfo.hasNextPage;
+            cursor = data.pageInfo.endCursor;
             console.log(`Github: Get top repos, round is ${round}, count is ${repoList.length}, cursor is ${cursor}, hasNextPage is ${hasNextPage}`);
             round++;
         }
@@ -75,6 +75,15 @@ export class Github {
         return (data.starredRepositories.edges || []).map(({ node, starredAt }) => ({
             ...node,
             starredAt,
+            repositoryTopics: (node?.repositoryTopics?.nodes || []).map(
+                (o: GithubRepositoryTopic): RepositoryTopic => ({ name: o?.topic?.name })
+            ),
+        }))
+    }
+
+    private transformGithubTopResponse(data: QueryForTopRepository): Repo[] {
+        return (data.edges || []).map(({ node }) => ({
+            ...node,
             repositoryTopics: (node?.repositoryTopics?.nodes || []).map(
                 (o: GithubRepositoryTopic): RepositoryTopic => ({ name: o?.topic?.name })
             ),
@@ -148,7 +157,7 @@ export class Github {
 
     
     private async getTopRepoAfterCursorRetryable(cursor: string, topicFirst: number) {
-        return new Promise<QueryForStarredRepository>((resolve, reject) => {
+        return new Promise<QueryForTopRepository>((resolve, reject) => {
             const operation: retry.RetryOperation = retry.operation({ retries: 5, factor: 2, minTimeout: 120000 });
             operation.attempt(async (retryCount) => {
                 try {
@@ -171,7 +180,7 @@ export class Github {
     private async getTopRepoAfterCursor(cursor: string, topicFirst: number) {
         const stargazers_count=1000
         const queryString=`stars:>=${stargazers_count} sort:stars-asc`
-        const data = await this.client.graphql<{ search: QueryForStarredRepository }>(
+        const data = await this.client.graphql<{ search: QueryForTopRepository }>(
             `
             query GetTopRepositories($queryString: String!, $after: String, $topicFirst: Int) {
                 search(query: $queryString, type: REPOSITORY, first: 100, after: $after) {
