@@ -69,16 +69,16 @@ export class Github {
             const data: QueryForTopRepository = await this.getTopRepoAfterCursorRetryable(cursor, githubTopicsFirst, queryString);
             const repos = this.transformGithubTopResponse(data);
 
-            const repoFilters = repos.filter((objA) => {
-                const objB = repoList.find((objB) => objA.nameWithOwner === objB.nameWithOwner);
-                return !objB || objA.nameWithOwner !== objB.nameWithOwner;
+            const repoFilters = repos.filter((repoNew) => {
+                const repoOld = repoList.find((repoOld) => repoNew.nameWithOwner === repoOld.nameWithOwner);
+                return !repoOld || repoNew.nameWithOwner !== repoOld.nameWithOwner;
             });
             repoList.push(
                 ...repoFilters,
             );
             hasNextPage = data.pageInfo.hasNextPage;
             console.log(`Github: Get top repos, round is ${round}, count is ${repoList.length}, cursor is ${cursor}, hasNextPage is ${hasNextPage}`);
-            if (repos.filter(repo => repo.nameWithOwner === end.nameWithOwner).length > 0) {
+            if (repos.find(repo => repo.nameWithOwner === end.nameWithOwner)) {
                 break;
             }
             cursor = data.pageInfo.endCursor;
