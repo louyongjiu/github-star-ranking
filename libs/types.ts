@@ -19,7 +19,6 @@ export interface RepoBase {
     nameWithOwner: string;
     url: string;
     description: string;
-    starredAt: string;
     primaryLanguage: Language;
     updatedAt: string;
     stargazerCount: number; 

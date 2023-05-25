@@ -25,8 +25,8 @@ export class Excel {
                 : repo.description || "",
             PrimaryLanguage: repo?.primaryLanguage?.name || '',
             RepositoryTopics: repo.repositoryTopics ? repo.repositoryTopics.map((topic) => topic.name).join(',') : '',
-            StarredAt: repo.starredAt,
             Stargazers: repo.stargazerCount,
+            updatedAt: repo.updatedAt,
         }))
     }
 
