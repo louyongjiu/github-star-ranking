@@ -78,10 +78,10 @@ export class Github {
             );
             hasNextPage = data.pageInfo.hasNextPage;
             console.log(`Github: Get top repos, round is ${round}, count is ${repoList.length}, cursor is ${cursor}, hasNextPage is ${hasNextPage}`);
-            cursor = data.pageInfo.endCursor;
             if (repos.filter(repo => repo.nameWithOwner === end.nameWithOwner).length > 0) {
                 break;
             }
+            cursor = data.pageInfo.endCursor;
             if (!hasNextPage) {
                 cursor = null;
                 const repo = repos.slice(-1)[0];
