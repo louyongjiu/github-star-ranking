@@ -19,32 +19,6 @@ export class Github {
 
     repoList: Repo[] = [];
 
-    async fullSync() {
-        // @ts-ignore
-        const limit = +process.env.FULLSYNC_LIMIT || 200;
-        console.log(`Github: Start to get all starred repos, limit is ${limit}`);
-
-        let cursor = '';
-        let hasNextPage = true;
-        const repoList = [];
-        let round = 1;
-
-        while (hasNextPage && repoList.length < limit) {
-            const data = await this.getStarredRepoAfterCursorRetryable(cursor, githubTopicsFirst);
-            repoList.push(
-                ...this.transformGithubStarResponse(data),
-            );
-            hasNextPage = data.starredRepositories.pageInfo.hasNextPage;
-            cursor = data.starredRepositories.pageInfo.endCursor;
-            console.log(`Github: Get starred repos, round is ${round}, count is ${repoList.length}, cursor is ${cursor}, hasNextPage is ${hasNextPage}`);
-            round++;
-        }
-
-        this.repoList = repoList;
-
-        console.log(`Github: Get all starred repos success, count is ${this.repoList.length}`);
-    }
-
     async topSync() {
         // @ts-ignore
         const limit = +process.env.FULLSYNC_LIMIT || 200;
@@ -52,15 +26,15 @@ export class Github {
         let stargazerCount = +process.env.STARS || 10000;
         console.log(`Github: Start to get top repos, limit is ${limit}, stars is ${stargazerCount}`);
 
-        let cursor = null;
+        const cursor = null;
         let hasNextPage = true;
         const repoList: Repo[] = [];
         let round = 1;
 
         const ascString = 'sort:stars-asc'
         const descString = 'sort:stars-desc'
-        const endString = `stars:>=${stargazerCount} ${descString}`
 
+        const endString = `stars:>=${stargazerCount} ${descString}`
         const endData = await this.getTopRepoAfterCursorRetryable(cursor, githubTopicsFirst, endString);
         const end = this.transformGithubTopResponse(endData).slice(0, 1)[0];
 
@@ -81,28 +55,15 @@ export class Github {
             if (repos.find(repo => repo.nameWithOwner === end.nameWithOwner)) {
                 break;
             }
-            cursor = data.pageInfo.endCursor;
-            if (!hasNextPage) {
-                cursor = null;
-                const repo = repos.slice(-1)[0];
-                stargazerCount = repo.stargazerCount;
-            }
+            const repo = repos.slice(-1)[0];
+            stargazerCount = repo.stargazerCount;
+        
             round++;
         }
         repoList.sort((a, b) => b.stargazerCount - a.stargazerCount);
         this.repoList = repoList;
 
         console.log(`Github: Get all top repos success, count is ${this.repoList.length}`);
-    }
-
-    private transformGithubStarResponse(data: QueryForStarredRepository): Repo[] {
-        return (data.starredRepositories.edges || []).map(({ node, starredAt }) => ({
-            ...node,
-            starredAt,
-            repositoryTopics: (node?.repositoryTopics?.nodes || []).map(
-                (o: GithubRepositoryTopic): RepositoryTopic => ({ name: o?.topic?.name })
-            ),
-        }))
     }
 
     private transformGithubTopResponse(data: QueryForTopRepository): Repo[] {
@@ -113,72 +74,6 @@ export class Github {
             ),
         }))
     }
-
-    private async getStarredRepoAfterCursorRetryable(cursor: string, topicFirst: number) {
-        return new Promise<QueryForStarredRepository>((resolve, reject) => {
-            const operation: retry.RetryOperation = retry.operation({ retries: 5, factor: 2, minTimeout: 120000 });
-            operation.attempt(async (retryCount) => {
-                try {
-                    resolve(await this.getStarredRepoAfterCursor(cursor, topicFirst))
-                } catch (err) {
-                    // @ts-ignore
-                    if (operation.retry(err)) {
-                        console.log(`Github: retryCount ${retryCount} , error ${JSON.stringify(err)}`);
-                        // console.log(`Rate limited, retrying in ${operation.timeouts()} ms`);
-                    } else {
-                        reject(err);
-                    }
-
-                }
-            });
-        });
-    }
-
-
-    private async getStarredRepoAfterCursor(cursor: string, topicFirst: number) {
-        const data = await this.client.graphql<{ viewer: QueryForStarredRepository }>(
-            `
-                query ($after: String, $topicFirst: Int) {
-                    viewer {
-                        starredRepositories(first: 100, after: $after) {
-                            pageInfo {
-                                startCursor
-                                endCursor
-                                hasNextPage
-                            }
-                            edges {
-                                starredAt
-                                node {
-                                    nameWithOwner
-                                    url
-                                    description
-                                    primaryLanguage {
-                                        name
-                                    }
-                                    repositoryTopics(first: $topicFirst) {
-                                        nodes {
-                                            topic {
-                                                name
-                                            }
-                                        }
-                                    }
-                                    updatedAt
-                                    stargazerCount
-                                }
-                            }
-                        }
-                    }
-                }
-            `,
-            {
-                after: cursor,
-                topicFirst: topicFirst,
-            },
-        );
-
-        return data.viewer;
-    }
-
 
     private async getTopRepoAfterCursorRetryable(cursor: string | null, topicFirst: number, queryString: string) {
         return new Promise<QueryForTopRepository>((resolve, reject) => {
@@ -199,7 +94,6 @@ export class Github {
             });
         });
     }
-
 
     private async getTopRepoAfterCursor(cursor: string | null, topicFirst: number, queryString: string) {
         const data = await this.client.graphql<{ search: QueryForTopRepository }>(
