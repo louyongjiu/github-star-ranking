@@ -50,7 +50,7 @@ export class Github {
         const limit = +process.env.FULLSYNC_LIMIT || 200;
         // @ts-ignore
         let stargazerCount = +process.env.STARS || 10000;
-        console.log(`Github: Start to get top repos, limit is ${limit}`);
+        console.log(`Github: Start to get top repos, limit is ${limit}, stars is ${stargazerCount}`);
 
         let cursor = null;
         let hasNextPage = true;
@@ -89,7 +89,7 @@ export class Github {
             }
             round++;
         }
-
+        repoList.sort((a, b) => b.stargazerCount - a.stargazerCount);
         this.repoList = repoList;
 
         console.log(`Github: Get all top repos success, count is ${this.repoList.length}`);
