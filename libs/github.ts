@@ -47,29 +47,30 @@ export class Github {
 
     async topSync() {
         // @ts-ignore
-        const limit = +process.env.FULLSYNC_LIMIT || 2100;
+        const limit = +process.env.FULLSYNC_LIMIT || 200;
+        // @ts-ignore
+        let stargazerCount = +process.env.STARS || 10000
         console.log(`Github: Start to get top repos, limit is ${limit}`);
 
         let cursor = null;
         let hasNextPage = true;
-        const repoList = [];
+        const repoList: Repo[] = [];
         let round = 1;
 
-        let starString = 'stars:>=1000'
         const ascString = 'sort:stars-asc'
         const descString = 'sort:stars-desc'
-        const endString = `${starString} ${descString}`
+        const endString = `stars:>=${stargazerCount} ${descString}`
 
-        const endData = await this.getTopRepoAfterCursor(cursor, githubTopicsFirst, endString);
+        const endData = await this.getTopRepoAfterCursorRetryable(cursor, githubTopicsFirst, endString);
         const end = this.transformGithubTopResponse(endData).slice(0, 1)[0];
 
         while (repoList.length < limit) {
-            const queryString = `${starString} ${ascString}`
-            const data = await this.getTopRepoAfterCursor(cursor, githubTopicsFirst, queryString);
+            const queryString = `stars:>=${stargazerCount} ${ascString}`
+            const data: QueryForTopRepository = await this.getTopRepoAfterCursorRetryable(cursor, githubTopicsFirst, queryString);
             const repos = this.transformGithubTopResponse(data);
 
             const repoFilters = repos.filter((objA) => {
-                const objB = this.repoList.find((objB) => objA.nameWithOwner === objB.nameWithOwner);
+                const objB = repoList.find((objB) => objA.nameWithOwner === objB.nameWithOwner);
                 return !objB || objA.nameWithOwner !== objB.nameWithOwner;
             });
             repoList.push(
@@ -78,13 +79,13 @@ export class Github {
             hasNextPage = data.pageInfo.hasNextPage;
             cursor = data.pageInfo.endCursor;
             console.log(`Github: Get top repos, round is ${round}, count is ${repoList.length}, cursor is ${cursor}, hasNextPage is ${hasNextPage}`);
-            if (repoList.filter(repo => repo.nameWithOwner === end.nameWithOwner)) {
+            if (repos.filter(repo => repo.nameWithOwner === end.nameWithOwner).length > 0) {
                 break;
             }
             if (!hasNextPage) {
                 cursor = null;
-                const repo = repoList.slice(-1)[0];
-                starString = `stars:>=${repo.stargazerCount}`
+                const repo = repos.slice(-1)[0];
+                stargazerCount = repo.stargazerCount;
             }
             round++;
         }
