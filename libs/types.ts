@@ -29,22 +29,8 @@ export interface Repo extends RepoBase {
     repositoryTopics: RepositoryTopic[];
 }
 
-export interface GithubStarRepoNode extends RepoBase {
+export interface GithubTopRepoNode extends RepoBase {
     repositoryTopics: GithubRepositoryTopicConnection;
-}
-
-export interface QueryForStarredRepository {
-    starredRepositories: {
-        pageInfo: {
-            startCursor: string;
-            endCursor: string;
-            hasNextPage: boolean;
-        };
-        edges: Array<{
-            starredAt: string;
-            node: GithubStarRepoNode;
-        }>;
-    };
 }
 
 export interface QueryForTopRepository {
@@ -54,7 +40,7 @@ export interface QueryForTopRepository {
             hasNextPage: boolean;
         };
         edges: Array<{
-            node: GithubStarRepoNode;
+            node: GithubTopRepoNode;
         }>;
 
 }
