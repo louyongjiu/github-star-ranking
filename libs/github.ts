@@ -1,6 +1,6 @@
 import { Octokit } from '@octokit/rest';
 import { excel } from './excel';
-import { QueryForStarredRepository, Repo, GithubRepositoryTopic, RepositoryTopic, QueryForTopRepository } from './types';
+import { Repo, GithubRepositoryTopic, RepositoryTopic, QueryForTopRepository } from './types';
 import * as retry from 'retry';
 import * as fs from 'fs';
 
