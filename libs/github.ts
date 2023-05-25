@@ -78,7 +78,6 @@ export class Github {
             );
             hasNextPage = data.pageInfo.hasNextPage;
             cursor = data.pageInfo.endCursor;
-            console.log(`Github: Get top repos, round is ${round}, count is ${repoList.length}, cursor is ${cursor}, hasNextPage is ${hasNextPage}`);
             if (repos.filter(repo => repo.nameWithOwner === end.nameWithOwner).length > 0) {
                 break;
             }
@@ -87,6 +86,7 @@ export class Github {
                 const repo = repos.slice(-1)[0];
                 stargazerCount = repo.stargazerCount;
             }
+            console.log(`Github: Get top repos, round is ${round}, count is ${repoList.length}, cursor is ${cursor}, hasNextPage is ${hasNextPage}`);
             round++;
         }
 
