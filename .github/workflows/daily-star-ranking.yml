@@ -25,6 +25,6 @@ jobs:
           TOKEN_OF_GITHUB: ${{ secrets.TOKEN_OF_GITHUB }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_REF: ${{ github.ref }}
-          FULLSYNC_LIMIT: 100
+          FULLSYNC_LIMIT: 2100
           REPO_TOPICS_LIMIT: 100
         run: npm start

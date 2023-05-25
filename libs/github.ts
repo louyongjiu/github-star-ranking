@@ -47,22 +47,45 @@ export class Github {
 
     async topSync() {
         // @ts-ignore
-        const limit = +process.env.FULLSYNC_LIMIT || 200;
+        const limit = +process.env.FULLSYNC_LIMIT || 2100;
         console.log(`Github: Start to get top repos, limit is ${limit}`);
 
-        let cursor = '';
+        let cursor = null;
         let hasNextPage = true;
         const repoList = [];
         let round = 1;
 
-        while (hasNextPage && repoList.length < limit) {
-            const data = await this.getTopRepoAfterCursor(cursor, githubTopicsFirst);
+        let starString = 'stars:>=1000'
+        const ascString = 'sort:stars-asc'
+        const descString = 'sort:stars-desc'
+        const endString = `${starString} ${descString}`
+
+        const endData = await this.getTopRepoAfterCursor(cursor, githubTopicsFirst, endString);
+        const end = this.transformGithubTopResponse(endData).slice(0, 1)[0];
+
+        while (repoList.length < limit) {
+            const queryString = `${starString} ${ascString}`
+            const data = await this.getTopRepoAfterCursor(cursor, githubTopicsFirst, queryString);
+            const repos = this.transformGithubTopResponse(data);
+
+            const repoFilters = repos.filter((objA) => {
+                const objB = this.repoList.find((objB) => objA.nameWithOwner === objB.nameWithOwner);
+                return !objB || objA.nameWithOwner !== objB.nameWithOwner;
+            });
             repoList.push(
-                ...this.transformGithubTopResponse(data),
+                ...repoFilters,
             );
             hasNextPage = data.pageInfo.hasNextPage;
             cursor = data.pageInfo.endCursor;
             console.log(`Github: Get top repos, round is ${round}, count is ${repoList.length}, cursor is ${cursor}, hasNextPage is ${hasNextPage}`);
+            if (repoList.filter(repo => repo.nameWithOwner === end.nameWithOwner)) {
+                break;
+            }
+            if (!hasNextPage) {
+                cursor = null;
+                const repo = repoList.slice(-1)[0];
+                starString = `stars:>=${repo.stargazerCount}`
+            }
             round++;
         }
 
@@ -155,13 +178,13 @@ export class Github {
         return data.viewer;
     }
 
-    
-    private async getTopRepoAfterCursorRetryable(cursor: string, topicFirst: number) {
+
+    private async getTopRepoAfterCursorRetryable(cursor: string | null, topicFirst: number, queryString: string) {
         return new Promise<QueryForTopRepository>((resolve, reject) => {
             const operation: retry.RetryOperation = retry.operation({ retries: 5, factor: 2, minTimeout: 120000 });
             operation.attempt(async (retryCount) => {
                 try {
-                    resolve(await this.getTopRepoAfterCursor(cursor, topicFirst))
+                    resolve(await this.getTopRepoAfterCursor(cursor, topicFirst, queryString))
                 } catch (err) {
                     // @ts-ignore
                     if (operation.retry(err)) {
@@ -177,9 +200,7 @@ export class Github {
     }
 
 
-    private async getTopRepoAfterCursor(cursor: string, topicFirst: number) {
-        const stargazers_count=1000
-        const queryString=`stars:>=${stargazers_count} sort:stars-asc`
+    private async getTopRepoAfterCursor(cursor: string | null, topicFirst: number, queryString: string) {
         const data = await this.client.graphql<{ search: QueryForTopRepository }>(
             `
             query GetTopRepositories($queryString: String!, $after: String, $topicFirst: Int) {
@@ -215,8 +236,8 @@ export class Github {
             }
             `,
             {
-                queryString:queryString,
-                after: null,
+                queryString: queryString,
+                after: cursor,
                 topicFirst: topicFirst,
             },
         );
