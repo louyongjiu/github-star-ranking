@@ -49,7 +49,7 @@ export class Github {
         // @ts-ignore
         const limit = +process.env.FULLSYNC_LIMIT || 200;
         // @ts-ignore
-        let stargazerCount = +process.env.STARS || 10000
+        let stargazerCount = +process.env.STARS || 10000;
         console.log(`Github: Start to get top repos, limit is ${limit}`);
 
         let cursor = null;
