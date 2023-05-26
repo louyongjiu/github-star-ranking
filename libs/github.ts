@@ -51,13 +51,12 @@ export class Github {
                 ...repoFilters,
             );
             hasNextPage = data.pageInfo.hasNextPage;
-            console.log(`Github: Get top repos, round is ${round}, count is ${repoList.length}, cursor is ${cursor}, hasNextPage is ${hasNextPage}`);
+            const repo = repos.slice(-1)[0];
+            stargazerCount = repo.stargazerCount;
+            console.log(`Github: Get top repos, round is ${round}, count is ${repoList.length}, stars is ${stargazerCount}, hasNextPage is ${hasNextPage}`);
             if (repos.find(repo => repo.nameWithOwner === end.nameWithOwner)) {
                 break;
             }
-            const repo = repos.slice(-1)[0];
-            stargazerCount = repo.stargazerCount;
-        
             round++;
         }
         repoList.sort((a, b) => b.stargazerCount - a.stargazerCount);
