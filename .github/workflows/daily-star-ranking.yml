@@ -22,7 +22,7 @@ jobs:
 
       - name: Execute Script
         env:
-          TOKEN_OF_GITHUB: ${{ secrets.GITHUB_TOKEN }} # 将 GITHUB_TOKEN 作为环境变量传递
+          TOKEN_OF_GITHUB: ${{ secrets.TOKEN_OF_GITHUB }} 
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_REF: ${{ github.ref }}
           STARS: 1000
