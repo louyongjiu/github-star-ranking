@@ -1,4 +1,4 @@
-name: Daily Star Ranking
+name: Weekly Star Ranking
 
 on:
   schedule:
