@@ -1,0 +1,31 @@
+name: Weekly Star Ranking
+
+on:
+  schedule:
+    - cron: '10 8 * * 0'
+  workflow_dispatch:
+
+jobs:
+  get-star-ranking:
+    runs-on: ubuntu-latest
+    environment: star-ranking
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup environment
+        uses: actions/setup-node@v2.2.0
+        with:
+          always-auth: false
+          node-version: 16.x
+
+      - run: yarn
+
+      - name: Execute Script
+        env:
+          TOKEN_OF_GITHUB: ${{ secrets.TOKEN_OF_GITHUB }} 
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_REF: ${{ github.ref }}
+          STARS: 1000
+          FULLSYNC_LIMIT: 100000
+          REPO_TOPICS_LIMIT: 100
+        run: npm start
